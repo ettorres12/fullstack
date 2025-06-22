@@ -1,478 +1,349 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
+  TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';  
 
-export default function CadastroPaciente() {
-  const [formData, setFormData] = useState({
-    nome: '',
-    dataNascimento: '',
-    cpf: '',
-    cartaoSUS: '',
-    genero: '',
-    telefone: '',
-    vacinas: [""],
-    alergias: [""],
-  });
-
-  const [vacinaInput, setVacinaInput] = useState('');
-  const [alergiaInput, setAlergiaInput] = useState('');
-
-  const [loading, setLoading] = useState(false);
-
-  // Substitua pela URL do seu backend
-  const API_URL = 'https://scp-21qd.onrender.com/api/pacientes';
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const formatCPF = (value: string) => {
-    // Remove tudo que não é dígito
-    const cleanValue = value.replace(/\D/g, '');
-    
-    // Aplica a máscara XXX.XXX.XXX-XX
-    if (cleanValue.length <= 11) {
-      return cleanValue
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-    }
-    return cleanValue.slice(0, 11)
-      .replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  };
-
-  const formatTelefone = (value: string) => {
-    const cleanValue = value.replace(/\D/g, '');
-    
-    if (cleanValue.length <= 11) {
-      return cleanValue
-        .replace(/(\d{2})(\d)/, '($1) $2')
-        .replace(/(\d{5})(\d{1,4})$/, '$1-$2');
-    }
-    return cleanValue.slice(0, 11)
-      .replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-  };
-
-  const formatCartaoSUS = (value: string) => {
-    const cleanValue = value.replace(/\D/g, '');
-    return cleanValue.slice(0, 15); // Cartão SUS tem 15 dígitos
-  };
-
-  const formatDataNascimento = (value: string) => {
-    const cleanValue = value.replace(/\D/g, '');
-    
-    if (cleanValue.length <= 8) {
-      return cleanValue
-        .replace(/(\d{2})(\d)/, '$1/$2')
-        .replace(/(\d{2})(\d)/, '$1/$2');
-    }
-    return cleanValue.slice(0, 8)
-      .replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
-  };
-
-  // Função para converter data DD/MM/AAAA para AAAA-MM-DD
-  const convertDateToISO = (dateString: string) => {
-    if (!dateString || dateString.length !== 10) return '';
-    const [day, month, year] = dateString.split('/');
-    return `${year}-${month}-${day}`;
-  };
-
-  const addVacina = () => {
-    if (vacinaInput.trim() && !formData.vacinas.includes(vacinaInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        vacinas: [...prev.vacinas, vacinaInput.trim()]
-      }));
-      setVacinaInput('');
-    }
-  };
-
-  const removeVacina = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      vacinas: prev.vacinas.filter((_, i) => i !== index)
-    }));
-  };
-
-  const addAlergia = () => {
-    if (alergiaInput.trim() && !formData.alergias.includes(alergiaInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        alergias: [...prev.alergias, alergiaInput.trim()]
-      }));
-      setAlergiaInput('');
-    }
-  };
-
-  const removeAlergia = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      alergias: prev.alergias.filter((_, i) => i !== index)
-    }));
-  };
-
-  const validateForm = () => {
-    const requiredFields = ['nome', 'dataNascimento', 'cpf', 'genero', 'telefone'];
-    
-    //for (let field of requiredFields) {
-    //  if (!formData[any].trim()) {
-      //  Alert.alert('Erro', `O campo ${field} é obrigatório`);
-        //return false;
-      //}
-   // }
-
-    // Validação da data de nascimento
-    if (formData.dataNascimento.length !== 10) {
-      Alert.alert('Erro', 'Por favor, insira uma data de nascimento válida (DD/MM/AAAA)');
-      return false;
-    }
-
-    return true;
-  };
-
-  const cadastrarPaciente = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Prepara os dados para envio
-      const dataToSend = {
-        ...formData,
-        dataNascimento: convertDateToISO(formData.dataNascimento),
-        cpf: formData.cpf.replace(/\D/g, ''), // Remove formatação do CPF
-        telefone: formData.telefone.replace(/\D/g, ''), // Remove formatação do telefone
-        cartaoSUS: formData.cartaoSUS.replace(/\D/g, ''), // Remove formatação se houver
-      };
-
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Adicione outros headers se necessário (Authorization, etc.)
-        },
-        body: JSON.stringify(dataToSend),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        Alert.alert(
-          'Sucesso!', 
-          'Paciente cadastrado com sucesso!',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Limpa o formulário após sucesso
-                setFormData({
-                  nome: '',
-                  dataNascimento: '',
-                  cpf: '',
-                  cartaoSUS: '',
-                  genero: '',
-                  telefone: '',
-                  vacinas: [],
-                  alergias: [],
-                });
-                setVacinaInput('');
-                setAlergiaInput('');
-              }
-            }
-          ]
-        );
-      } else {
-        const errorData = await response.json();
-        Alert.alert('Erro', errorData.message || 'Erro ao cadastrar paciente');
-      }
-    } catch (error) {
-      console.error('Erro na requisição:', error);
-      Alert.alert('Erro', 'Erro de conexão. Verifique sua internet e tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Cadastro de Paciente</Text>
-
-        <View style={styles.form}>
-          <Text style={styles.label}>Nome Completo *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.nome}
-            onChangeText={(value) => handleInputChange('nome', value)}
-            placeholder="Digite o nome completo"
-          />
-
-          <Text style={styles.label}>Data de Nascimento *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.dataNascimento}
-            onChangeText={(value) => handleInputChange('dataNascimento', formatDataNascimento(value))}
-            placeholder="DD/MM/AAAA"
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.label}>CPF *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.cpf}
-            onChangeText={(value) => handleInputChange('cpf', formatCPF(value))}
-            placeholder="000.000.000-00"
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.label}>Cartão SUS</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.cartaoSUS}
-            onChangeText={(value) => handleInputChange('cartaoSUS', formatCartaoSUS(value))}
-            placeholder="123456789012345"
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.label}>Gênero *</Text>
-          <View style={styles.radioContainer}>
-            {['Masculino', 'Feminino', 'Outro'].map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={styles.radioOption}
-                onPress={() => handleInputChange('genero', option)}
-              >
-                <View style={[
-                  styles.radioCircle,
-                  formData.genero === option && styles.radioSelected
-                ]} />
-                <Text style={styles.radioText}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <Text style={styles.label}>Telefone *</Text>
-          <TextInput
-            style={styles.input}
-            value={formData.telefone}
-            onChangeText={(value) => handleInputChange('telefone', formatTelefone(value))}
-            placeholder="(11) 99999-9999"
-            keyboardType="phone-pad"
-          />
-
-          <Text style={styles.label}>Vacinas</Text>
-          <View style={styles.arrayContainer}>
-            <View style={styles.inputWithButton}>
-              <TextInput
-                style={[styles.input, styles.arrayInput]}
-                value={vacinaInput}
-                onChangeText={setVacinaInput}
-                placeholder="Digite uma vacina"
-              />
-              <TouchableOpacity style={styles.addButton} onPress={addVacina}>
-                <Text style={styles.addButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.tagContainer}>
-              {formData.vacinas.map((vacina, index) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{vacina}</Text>
-                  <TouchableOpacity onPress={() => removeVacina(index)}>
-                    <Text style={styles.removeTag}>×</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          <Text style={styles.label}>Alergias</Text>
-          <View style={styles.arrayContainer}>
-            <View style={styles.inputWithButton}>
-              <TextInput
-                style={[styles.input, styles.arrayInput]}
-                value={alergiaInput}
-                onChangeText={setAlergiaInput}
-                placeholder="Digite uma alergia"
-              />
-              <TouchableOpacity style={styles.addButton} onPress={addAlergia}>
-                <Text style={styles.addButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.tagContainer}>
-              {formData.alergias.map((alergia, index) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{alergia}</Text>
-                  <TouchableOpacity onPress={() => removeAlergia(index)}>
-                    <Text style={styles.removeTag}>×</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          </View>
-
-          <TouchableOpacity 
-            style={[styles.button, loading && styles.buttonDisabled]} 
-            onPress={cadastrarPaciente}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <Text style={styles.buttonText}>Cadastrar Paciente</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
+interface CardData {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+  route: string;  
+  urgent?: boolean;
 }
 
+const HomeScreen: React.FC = () => {
+  const router = useRouter();  
+
+  const cardData: CardData[] = [
+    {
+      id: '1',
+      title: 'Emergência',
+      subtitle: 'Atendimento de urgência',
+      icon: 'medical',
+      color: '#FF4444',
+      route: '/Emergencia',
+      urgent: true,
+    },
+    {
+      id: '2',
+      title: 'Consultas',
+      subtitle: 'Agendar e gerenciar consultas',
+      icon: 'calendar',
+      color: '#FFD700',
+      route: '/Consultas',
+    },
+    {
+      id: '3',
+      title: 'Pacientes',
+      subtitle: 'Histórico médico',
+      icon: 'people',
+      color: '#4FC3F7',
+      route: '/RelatorioPacientes',
+    },
+    {
+      id: '8',
+      title: 'Cadastro de Pacientes',
+      subtitle: 'Cadastro e histórico médico',
+      icon: 'person',
+      color: '#4FC3F7',
+      route: '/CadastroPaciente',
+    },
+    {
+      id: '9',
+      title: 'Cadastro de Profissionais',
+      subtitle: '',
+      icon: 'person',
+      color: '#00796B',
+      route: '/CadastroEmpregado',
+    },
+    {
+      id: '4',
+      title: 'Medicamentos',
+      subtitle: 'Prescrições e estoque',
+      icon: 'medical-outline',
+      color: '#FF8C00',
+      route: '/Medicamentos',
+    },
+    {
+      id: '5',
+      title: 'Exames',
+      subtitle: 'Resultados e agendamentos',
+      icon: 'clipboard',
+      color: '#9B59B6',
+      route: '/Exames',
+    },
+    {
+      id: '6',
+      title: 'Equipe',
+      subtitle: 'Análises e estatísticas',
+      icon: 'people',
+      color: '#00796B',
+      route: '/RelatorioEmpregados',
+    },
+    {
+      id: '7',
+      title: 'Configurações',
+      subtitle: 'Preferências do sistema',
+      icon: 'settings',
+      color: '#95A5A6',
+      route: '/Configuracoes',
+    },
+  ];
+
+  const handleCardPress = (route: string) => {
+    router.push(route as any);  
+  };
+
+  const renderCard = (item: CardData) => (
+    <TouchableOpacity
+      key={item.id}
+      style={[styles.card, item.urgent && styles.urgentCard]}
+      onPress={() => handleCardPress(item.route)}
+      activeOpacity={0.7}
+    >
+      <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+        <Ionicons 
+          name={item.icon} 
+          size={32} 
+          color="white" 
+        />
+      </View>
+      <View style={styles.cardContent}>
+        <Text style={[styles.cardTitle, item.urgent && styles.urgentText]}>
+          {item.title}
+        </Text>
+        <Text style={styles.cardSubtitle}>
+          {item.subtitle}
+        </Text>
+      </View>
+      <Ionicons 
+        name="chevron-forward" 
+        size={24} 
+        color="#BDC3C7" 
+      />
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#2C3E50" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.welcomeText}>Bem-vindo ao</Text>
+          <Text style={styles.systemName}>SCP - Sistema de Cadastro de Pacientes</Text>
+        </View>
+        <TouchableOpacity style={styles.profileButton}>
+          <Ionicons name="person-circle" size={40} color="white" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Status Cards */}
+      <View style={styles.statusContainer}>
+        <View style={styles.statusCard}>
+          <Text style={styles.statusNumber}>24</Text>
+          <Text style={styles.statusLabel}>Consultas Hoje</Text>
+        </View>
+        <View style={styles.statusCard}>
+          <Text style={styles.statusNumber}>156</Text>
+          <Text style={styles.statusLabel}>Pacientes Ativos</Text>
+        </View>
+        <View style={styles.statusCard}>
+          <Text style={styles.statusNumber}>3</Text>
+          <Text style={styles.statusLabel}>Emergências</Text>
+        </View>
+      </View>
+
+      {/* Main Content */}
+      <ScrollView 
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.sectionTitle}>Acesso Rápido</Text>
+        
+        <View style={styles.cardsContainer}>
+          {cardData.map(renderCard)}
+        </View>
+
+        {/* Recent Activity */}
+        <View style={styles.recentActivity}>
+          <Text style={styles.sectionTitle}>Atividade Recente</Text>
+          
+          <View style={styles.activityItem}>
+            <Ionicons name="checkmark-circle" size={24} color="#50C878" />
+            <View style={styles.activityText}>
+              <Text style={styles.activityTitle}>Consulta finalizada</Text>
+              <Text style={styles.activitySubtitle}>Dr. Silva - há 15 min</Text>
+            </View>
+          </View>
+
+          <View style={styles.activityItem}>
+            <Ionicons name="add-circle" size={24} color="#4A90E2" />
+            <View style={styles.activityText}>
+              <Text style={styles.activityTitle}>Novo paciente cadastrado</Text>
+              <Text style={styles.activitySubtitle}>Maria Santos - há 1h</Text>
+            </View>
+          </View>
+
+          <View style={styles.activityItem}>
+            <Ionicons name="document" size={24} color="#FF8C00" />
+            <View style={styles.activityText}>
+              <Text style={styles.activityTitle}>Exame disponível</Text>
+              <Text style={styles.activitySubtitle}>João Oliveira - há 2h</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+// Mantive seus estilos originais
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8F9FA',
   },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 20,
+  header: {
+    backgroundColor: '#2C3E50',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  title: {
+  welcomeText: {
+    color: 'white',
+    fontSize: 16,
+    opacity: 0.8,
+  },
+  systemName: {
+    color: 'white',
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
-    color: '#333',
   },
-  form: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
+  profileButton: {
+    padding: 5,
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    marginTop: -10,
+    borderRadius: 12,
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 4,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    backgroundColor: '#fff',
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  radioContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
-  },
-  radioOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  radioCircle: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#007AFF',
-    marginRight: 8,
-  },
-  radioSelected: {
-    backgroundColor: '#007AFF',
-  },
-  radioText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  arrayContainer: {
-    marginBottom: 16,
-  },
-  inputWithButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  arrayInput: {
+  statusCard: {
     flex: 1,
-    marginBottom: 0,
-    marginRight: 10,
-  },
-  addButton: {
-    backgroundColor: '#28a745',
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
     alignItems: 'center',
   },
-  addButtonText: {
-    color: '#fff',
+  statusNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+  },
+  statusLabel: {
+    fontSize: 12,
+    color: '#7F8C8D',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#2C3E50',
+    marginTop: 25,
+    marginBottom: 15,
   },
-  tagContainer: {
+  cardsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 8,
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
-  tag: {
-    backgroundColor: '#e9ecef',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    margin: 4,
+  card: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
     flexDirection: 'row',
     alignItems: 'center',
+    elevation: 2,
+    width: '30%',
   },
-  tagText: {
-    color: '#333',
-    marginRight: 6,
+  urgentCard: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF4444',
   },
-  removeTag: {
-    color: '#dc3545',
-    fontSize: 16,
-    fontWeight: 'bold',
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2C3E50',
+  },
+  urgentText: {
+    color: '#FF4444',
+  },
+  cardSubtitle: {
+    fontSize: 10,
+    color: '#7F8C8D',
+    marginTop: 4,
+  },
+  recentActivity: {
+    marginBottom: 30,
+  },
+  activityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  activityText: {
+    marginLeft: 12,
+  },
+  activityTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2C3E50',
+  },
+  activitySubtitle: {
+    fontSize: 12,
+    color: '#7F8C8D',
   },
 });
+
+export default HomeScreen;
