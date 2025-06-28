@@ -20,6 +20,7 @@ export default function CadastroProfissional() {
     registro: '',
     genero: '',
     telefone: '',
+    funcao: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -80,7 +81,7 @@ export default function CadastroProfissional() {
   };
 
 const validateForm = () => {
-    const requiredFields = ['nome', 'dataNascimento', 'cpf', 'genero', 'telefone'];
+    const requiredFields = ['nome', 'dataNascimento', 'cpf', 'genero', 'telefone', 'funcao'];
     
     //for (let field of requiredFields) {
     //  if (!formData[any].trim()) {
@@ -141,6 +142,7 @@ const validateForm = () => {
                   registro: '',
                   genero: '',
                   telefone: '',
+                  funcao: '',
                 });
               }
             }
@@ -199,6 +201,14 @@ const validateForm = () => {
             value={formData.registro}
             onChangeText={(value) => handleInputChange('registro', value)}
             placeholder="Digite o número de registro profissional"
+          />
+
+          <Text style={styles.label}>Função/ Cargo *</Text>
+          <TextInput
+            style={styles.input}
+            value={formData.funcao}
+            onChangeText={(value) => handleInputChange('funcao', value)}
+            placeholder="Digite a função ou o cargo e a especialidade do profissional caso necessário"
           />
 
           <Text style={styles.label}>Gênero *</Text>

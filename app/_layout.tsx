@@ -23,6 +23,9 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
         <Stack.Screen name="CadastroPaciente" />
+        <Stack.Screen name="CadastroConsulta" />
+        <Stack.Screen name="RelatorioConsultas" />
+        <Stack.Screen name="login" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

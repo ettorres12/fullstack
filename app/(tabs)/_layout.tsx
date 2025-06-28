@@ -60,6 +60,10 @@ export default function TabLayout() {
         name="RelatorioPacientes"
         
       />
+      <Stack.Screen
+        name="RelatorioConsultas"
+        
+      />
     </>
   );
 }

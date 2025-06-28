@@ -1,349 +1,356 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  ScrollView,
+  TextInput,
   TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';  
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-interface CardData {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-  route: string;  
-  urgent?: boolean;
+const { width, height } = Dimensions.get('window');
+
+// Credenciais padrão do sistema interno
+const DEFAULT_CREDENTIALS = {
+  email: 'admin@empresa.com',
+  password: 'admin123'
+};
+
+// Tipos para navegação
+type RootStackParamList = {
+  Login: undefined;
+  inicio: undefined;
+};
+
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
+
+interface LoginFormData {
+  email: string;
+  password: string;
 }
 
-const HomeScreen: React.FC = () => {
-  const router = useRouter();  
+interface ValidationErrors {
+  email?: string;
+  password?: string;
+}
 
-  const cardData: CardData[] = [
-    {
-      id: '1',
-      title: 'Emergência',
-      subtitle: 'Atendimento de urgência',
-      icon: 'medical',
-      color: '#FF4444',
-      route: '/Emergencia',
-      urgent: true,
-    },
-    {
-      id: '2',
-      title: 'Consultas',
-      subtitle: 'Agendar e gerenciar consultas',
-      icon: 'calendar',
-      color: '#FFD700',
-      route: '/Consultas',
-    },
-    {
-      id: '3',
-      title: 'Pacientes',
-      subtitle: 'Histórico médico',
-      icon: 'people',
-      color: '#4FC3F7',
-      route: '/RelatorioPacientes',
-    },
-    {
-      id: '8',
-      title: 'Cadastro de Pacientes',
-      subtitle: 'Cadastro e histórico médico',
-      icon: 'person',
-      color: '#4FC3F7',
-      route: '/CadastroPaciente',
-    },
-    {
-      id: '9',
-      title: 'Cadastro de Profissionais',
-      subtitle: '',
-      icon: 'person',
-      color: '#00796B',
-      route: '/CadastroEmpregado',
-    },
-    {
-      id: '4',
-      title: 'Medicamentos',
-      subtitle: 'Prescrições e estoque',
-      icon: 'medical-outline',
-      color: '#FF8C00',
-      route: '/Medicamentos',
-    },
-    {
-      id: '5',
-      title: 'Exames',
-      subtitle: 'Resultados e agendamentos',
-      icon: 'clipboard',
-      color: '#9B59B6',
-      route: '/Exames',
-    },
-    {
-      id: '6',
-      title: 'Equipe',
-      subtitle: 'Análises e estatísticas',
-      icon: 'people',
-      color: '#00796B',
-      route: '/RelatorioEmpregados',
-    },
-    {
-      id: '7',
-      title: 'Configurações',
-      subtitle: 'Preferências do sistema',
-      icon: 'settings',
-      color: '#95A5A6',
-      route: '/Configuracoes',
-    },
-  ];
+const LoginScreen: React.FC = () => {
+  const navigation = useNavigation<LoginScreenNavigationProp>();
+  
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: '',
+    password: '',
+  });
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleCardPress = (route: string) => {
-    router.push(route as any);  
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
-  const renderCard = (item: CardData) => (
-    <TouchableOpacity
-      key={item.id}
-      style={[styles.card, item.urgent && styles.urgentCard]}
-      onPress={() => handleCardPress(item.route)}
-      activeOpacity={0.7}
-    >
-      <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-        <Ionicons 
-          name={item.icon} 
-          size={32} 
-          color="white" 
-        />
-      </View>
-      <View style={styles.cardContent}>
-        <Text style={[styles.cardTitle, item.urgent && styles.urgentText]}>
-          {item.title}
-        </Text>
-        <Text style={styles.cardSubtitle}>
-          {item.subtitle}
-        </Text>
-      </View>
-      <Ionicons 
-        name="chevron-forward" 
-        size={24} 
-        color="#BDC3C7" 
-      />
-    </TouchableOpacity>
-  );
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email é obrigatório';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'Email inválido';
+    }
+
+    if (!formData.password.trim()) {
+      newErrors.password = 'Senha é obrigatória';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field: keyof LoginFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Limpa o erro do campo quando o usuário começar a digitar
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleLogin = async () => {
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    try {
+      // Simula chamada de API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Verifica se as credenciais estão corretas
+      if (formData.email !== DEFAULT_CREDENTIALS.email || 
+          formData.password !== DEFAULT_CREDENTIALS.password) {
+        throw new Error('Credenciais inválidas');
+      }
+      
+      // Navega para a tela principal após login bem-sucedido
+      navigation.replace('inicio');
+      
+    } catch (error) {
+      Alert.alert(
+        'Acesso Negado',
+        'Email ou senha incorretos. Verifique suas credenciais.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = () => {
+    Alert.alert(
+      'Recuperar Senha',
+      'Entre em contato com o suporte de TI para recuperar sua senha.',
+      [{ text: 'OK' }]
+    );
+  };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#2C3E50" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.welcomeText}>Bem-vindo ao</Text>
-          <Text style={styles.systemName}>SCP - Sistema de Cadastro de Pacientes</Text>
-        </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <Ionicons name="person-circle" size={40} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Status Cards */}
-      <View style={styles.statusContainer}>
-        <View style={styles.statusCard}>
-          <Text style={styles.statusNumber}>24</Text>
-          <Text style={styles.statusLabel}>Consultas Hoje</Text>
-        </View>
-        <View style={styles.statusCard}>
-          <Text style={styles.statusNumber}>156</Text>
-          <Text style={styles.statusLabel}>Pacientes Ativos</Text>
-        </View>
-        <View style={styles.statusCard}>
-          <Text style={styles.statusNumber}>3</Text>
-          <Text style={styles.statusLabel}>Emergências</Text>
-        </View>
-      </View>
-
-      {/* Main Content */}
-      <ScrollView 
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <LinearGradient
+        colors={['#667eea', '#764ba2']}
+        style={styles.gradient}
       >
-        <Text style={styles.sectionTitle}>Acesso Rápido</Text>
-        
-        <View style={styles.cardsContainer}>
-          {cardData.map(renderCard)}
-        </View>
-
-        {/* Recent Activity */}
-        <View style={styles.recentActivity}>
-          <Text style={styles.sectionTitle}>Atividade Recente</Text>
-          
-          <View style={styles.activityItem}>
-            <Ionicons name="checkmark-circle" size={24} color="#50C878" />
-            <View style={styles.activityText}>
-              <Text style={styles.activityTitle}>Consulta finalizada</Text>
-              <Text style={styles.activitySubtitle}>Dr. Silva - há 15 min</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.logoContainer}>
+            <View style={styles.logoCircle}>
+              <Ionicons name="business" size={40} color="#fff" />
             </View>
+            <Text style={styles.logoText}>Sistema Interno - SCP</Text>
+            <Text style={styles.logoSubtext}>Acesso restrito a funcionários</Text>
           </View>
 
-          <View style={styles.activityItem}>
-            <Ionicons name="add-circle" size={24} color="#4A90E2" />
-            <View style={styles.activityText}>
-              <Text style={styles.activityTitle}>Novo paciente cadastrado</Text>
-              <Text style={styles.activitySubtitle}>Maria Santos - há 1h</Text>
+          <View style={styles.formContainer}>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, errors.email && styles.inputError]}
+                  placeholder="Email corporativo"
+                  placeholderTextColor="#999"
+                  value={formData.email}
+                  onChangeText={(text) => handleInputChange('email', text)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             </View>
-          </View>
 
-          <View style={styles.activityItem}>
-            <Ionicons name="document" size={24} color="#FF8C00" />
-            <View style={styles.activityText}>
-              <Text style={styles.activityTitle}>Exame disponível</Text>
-              <Text style={styles.activitySubtitle}>João Oliveira - há 2h</Text>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, errors.password && styles.inputError]}
+                  placeholder="Senha"
+                  placeholderTextColor="#999"
+                  value={formData.password}
+                  onChangeText={(text) => handleInputChange('password', text)}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  style={styles.eyeIcon}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-outline" : "eye-off-outline"}
+                    size={20}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+              </View>
+              {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
             </View>
+
+            <TouchableOpacity
+              style={styles.forgotPasswordButton}
+              onPress={handleForgotPassword}
+            >
+              <Text style={styles.forgotPasswordText}>Esqueceu sua senha?</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.loginButtonText}>Acessar Sistema</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Mostra credenciais de teste apenas em desenvolvimento */}
+            {__DEV__ && (
+              <View style={styles.devCredentials}>
+                <Text style={styles.devText}>
+                  🔧 DEV: {DEFAULT_CREDENTIALS.email} / {DEFAULT_CREDENTIALS.password}
+                </Text>
+              </View>
+            )}
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </LinearGradient>
+    </KeyboardAvoidingView>
   );
 };
 
-// Mantive seus estilos originais
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
   },
-  header: {
-    backgroundColor: '#2C3E50',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  welcomeText: {
-    color: 'white',
-    fontSize: 16,
-    opacity: 0.8,
-  },
-  systemName: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  profileButton: {
-    padding: 5,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: 'white',
-    marginHorizontal: 20,
-    marginTop: -10,
-    borderRadius: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  statusCard: {
+  gradient: {
     flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  logoContainer: {
     alignItems: 'center',
+    marginBottom: 40,
   },
-  statusNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-  },
-  statusLabel: {
-    fontSize: 12,
-    color: '#7F8C8D',
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2C3E50',
-    marginTop: 25,
-    marginBottom: 15,
-  },
-  cardsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  card: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 2,
-    width: '30%',
-  },
-  urgentCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF4444',
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 30,
+  logoCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginBottom: 20,
   },
-  cardContent: {
-    flex: 1,
+  logoText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
   },
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2C3E50',
+  logoSubtext: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.8)',
   },
-  urgentText: {
-    color: '#FF4444',
+  formContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 30,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  cardSubtitle: {
-    fontSize: 10,
-    color: '#7F8C8D',
-    marginTop: 4,
+  inputContainer: {
+    marginBottom: 20,
   },
-  recentActivity: {
-    marginBottom: 30,
-  },
-  activityItem: {
+  inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 12,
+    backgroundColor: '#f9f9f9',
+    paddingHorizontal: 15,
+    height: 50,
   },
-  activityText: {
-    marginLeft: 12,
+  inputIcon: {
+    marginRight: 10,
   },
-  activityTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2C3E50',
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
   },
-  activitySubtitle: {
+  inputError: {
+    borderColor: '#ff4757',
+  },
+  eyeIcon: {
+    padding: 5,
+  },
+  errorText: {
+    color: '#ff4757',
     fontSize: 12,
-    color: '#7F8C8D',
+    marginTop: 5,
+    marginLeft: 5,
+  },
+  forgotPasswordButton: {
+    alignSelf: 'flex-end',
+    marginBottom: 25,
+  },
+  forgotPasswordText: {
+    color: '#667eea',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  loginButton: {
+    backgroundColor: '#667eea',
+    borderRadius: 12,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#667eea',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  loginButtonDisabled: {
+    opacity: 0.7,
+  },
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  devCredentials: {
+    marginTop: 15,
+    padding: 12,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#667eea',
+  },
+  devText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
 });
 
-export default HomeScreen;
+export default LoginScreen;

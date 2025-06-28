@@ -141,6 +141,11 @@ export default function ListaProfissionais() {
             <Text style={styles.label}>Data de Nascimento:</Text>
             <Text style={styles.value}>{formatData(profissional.dataNascimento) || 'Não informado'}</Text>
           </View>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Função/ Cargo:</Text>
+            <Text style={styles.value}>{formatData(profissional.dataNascimento) || 'Não informado'}</Text>
+          </View>
           
           <View style={styles.infoRow}>
             <Text style={styles.label}>Gênero:</Text>
