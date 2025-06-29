@@ -28,7 +28,7 @@ const HomeScreen: React.FC = () => {
     {
       id: '2',
       title: 'Consultas',
-      subtitle: 'Agendar e gerenciar consultas',
+      subtitle: 'Agendar consultas',
       icon: 'calendar',
       color: '#FFD700',
       route: '/CadastroConsulta',
@@ -36,7 +36,7 @@ const HomeScreen: React.FC = () => {
     {
       id: '1',
       title: 'Lista de Consultas',
-      subtitle: 'Agendar e gerenciar consultas',
+      subtitle: 'Listar consultas',
       icon: 'calendar',
       color: '#FFD700',
       route: '/RelatorioConsultas',
@@ -44,7 +44,7 @@ const HomeScreen: React.FC = () => {
     {
       id: '3',
       title: 'Lista de Pacientes',
-      subtitle: 'Histórico médico',
+      subtitle: 'Ver pacientes cadastrados',
       icon: 'people',
       color: '#4FC3F7',
       route: '/RelatorioPacientes',
@@ -52,7 +52,7 @@ const HomeScreen: React.FC = () => {
     {
       id: '8',
       title: 'Cadastro de Pacientes',
-      subtitle: 'Cadastro e histórico médico',
+      subtitle: 'Cadastrar novos pacientes',
       icon: 'person',
       color: '#4FC3F7',
       route: '/CadastroPaciente',
@@ -60,7 +60,7 @@ const HomeScreen: React.FC = () => {
     {
       id: '9',
       title: 'Cadastro de Profissionais',
-      subtitle: '',
+      subtitle: 'Cadastrar novos profissionais',
       icon: 'person',
       color: '#00796B',
       route: '/CadastroEmpregado',
@@ -68,7 +68,7 @@ const HomeScreen: React.FC = () => {
     {
       id: '6',
       title: 'Lista de Profissionais',
-      subtitle: 'Análises e estatísticas',
+      subtitle: 'Listar profissionais cadastrados',
       icon: 'people',
       color: '#00796B',
       route: '/RelatorioEmpregados',

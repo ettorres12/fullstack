@@ -144,7 +144,7 @@ export default function ListaProfissionais() {
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>Função/ Cargo:</Text>
-            <Text style={styles.value}>{formatData(profissional.dataNascimento) || 'Não informado'}</Text>
+            <Text style={styles.value}>{profissional.funcao || 'Não informado'}</Text>
           </View>
           
           <View style={styles.infoRow}>

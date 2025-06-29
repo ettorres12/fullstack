@@ -103,10 +103,10 @@ export default function ListaConsultas() {
       if (!Consulta) return false;
       
       const registro = Consulta.registro ? Consulta.registro.toString().toLowerCase() : '';
-      const nome = Consulta.nome ? Consulta.nome.toString().toLowerCase() : '';
+      const cartaoSUSConsulta = Consulta.cartaoSUSConsulta ? Consulta.cartaoSUSConsulta.toString().toLowerCase() : '';
       const textoBusca = texto.toLowerCase();
       
-      return registro.includes(textoBusca) || nome.includes(textoBusca);
+      return registro.includes(textoBusca) || cartaoSUSConsulta.includes(textoBusca);
     });
     
     setConsultasFiltrados(filtrados);
@@ -127,8 +127,8 @@ export default function ListaConsultas() {
     return (
       <View key={Consulta.id || index} style={styles.card}>
         <View style={styles.cardHeader}>
-          <Text style={styles.title}>{Consulta.cartaoSUSConsulta || 'Não informado'}</Text>
-          <Text style={styles.value}>Cartão SUS: {Consulta.cartaoSUSConsulta || 'Não informado'}</Text>
+          <Text style={styles.title}>{Consulta.local || 'Não informado'}</Text>
+          <Text style={styles.value}>Data: {Consulta.dataHora || 'Não informado'}</Text>
         </View>
         
         <View style={styles.cardBody}>
@@ -194,7 +194,7 @@ export default function ListaConsultas() {
           style={styles.searchInput}
           value={searchText}
           onChangeText={pesquisarConsulta}
-          placeholder="Pesquisar por registro ou nome..."
+          placeholder="Pesquisar por Cartão SUS"
           placeholderTextColor="#999"
         />
         {searchText !== '' && (

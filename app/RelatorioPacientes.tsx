@@ -102,11 +102,11 @@ export default function ListaPacientes() {
     const filtrados = Pacientes.filter((Paciente: any) => {
       if (!Paciente) return false;
       
-      const registro = Paciente.registro ? Paciente.registro.toString().toLowerCase() : '';
+      const cartaoSUS = Paciente.cartaoSUS ? Paciente.cartaoSUS.toString().toLowerCase() : '';
       const nome = Paciente.nome ? Paciente.nome.toString().toLowerCase() : '';
       const textoBusca = texto.toLowerCase();
       
-      return registro.includes(textoBusca) || nome.includes(textoBusca);
+      return cartaoSUS.includes(textoBusca) || nome.includes(textoBusca);
     });
     
     setPacientesFiltrados(filtrados);
@@ -128,7 +128,7 @@ export default function ListaPacientes() {
       <View key={Paciente.id || index} style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.nome}>{Paciente.nome || 'Nome não informado'}</Text>
-          <Text style={styles.registro}>Registro: {Paciente.registro || 'Não informado'}</Text>
+          <Text style={styles.registro}>Cartão SUS: {Paciente.cartaoSUS || 'Não informado'}</Text>
         </View>
         
         <View style={styles.cardBody}>
@@ -150,6 +150,14 @@ export default function ListaPacientes() {
           <View style={styles.infoRow}>
             <Text style={styles.label}>Telefone:</Text>
             <Text style={styles.value}>{formatTelefone(Paciente.telefone) || 'Não informado'}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Vacinas:</Text>
+            <Text style={styles.value}>{Paciente.Vacinas || 'Não informado'}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.label}>Alergias:</Text>
+            <Text style={styles.value}>{Paciente.alergias || 'Não informado'}</Text>
           </View>
         </View>
       </View>
@@ -174,7 +182,7 @@ export default function ListaPacientes() {
           style={styles.searchInput}
           value={searchText}
           onChangeText={pesquisarPaciente}
-          placeholder="Pesquisar por registro ou nome..."
+          placeholder="Pesquisar por cartão SUS ou nome..."
           placeholderTextColor="#999"
         />
         {searchText !== '' && (

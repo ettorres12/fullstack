@@ -21,7 +21,7 @@ const { width, height } = Dimensions.get('window');
 
 // Credenciais padrão do sistema interno
 const DEFAULT_CREDENTIALS = {
-  email: 'admin@empresa.com',
+  email: 'admin@admin.com',
   password: 'admin123'
 };
 
