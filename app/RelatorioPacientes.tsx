@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
   TouchableOpacity,
-  RefreshControl,
+  View,
 } from 'react-native';
-
+  
 export default function ListaPacientes() {
   const [Pacientes, setPacientes] = useState<any[]>([]);
   const [PacientesFiltrados, setPacientesFiltrados] = useState<any[]>([]);

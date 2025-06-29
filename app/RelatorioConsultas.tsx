@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
   TouchableOpacity,
-  RefreshControl,
+  View,
 } from 'react-native';
 
 export default function ListaConsultas() {
@@ -47,7 +47,7 @@ export default function ListaConsultas() {
       return '';
     }
   };
-
+  
   const formatData = (dataISO: any): string => {
     if (!dataISO) return '';
     try {

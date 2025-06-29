@@ -1,15 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
   SafeAreaView,
+  ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';  
 
 interface CardData {
   id: string;
@@ -23,7 +23,7 @@ interface CardData {
 
 const HomeScreen: React.FC = () => {
   const router = useRouter();  
-
+  
   const cardData: CardData[] = [
     {
       id: '2',

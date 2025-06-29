@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  ActivityIndicator,
   TouchableOpacity,
-  RefreshControl,
+  View,
 } from 'react-native';
-
+  
 export default function ListaProfissionais() {
   const [profissionais, setProfissionais] = useState<any[]>([]);
   const [profissionaisFiltrados, setProfissionaisFiltrados] = useState<any[]>([]);
