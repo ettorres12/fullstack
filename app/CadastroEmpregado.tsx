@@ -35,10 +35,9 @@ export default function CadastroProfissional() {
   };
 
   const formatCPF = (value: string) => {
-    // Remove tudo que não é dígito
     const cleanValue = value.replace(/\D/g, '');
     
-    // Aplica a máscara XXX.XXX.XXX-XX
+    
     if (cleanValue.length <= 11) {
       return cleanValue
         .replace(/(\d{3})(\d)/, '$1.$2')
@@ -73,7 +72,6 @@ export default function CadastroProfissional() {
       .replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3');
   };
 
-  // Função para converter data DD/MM/AAAA para AAAA-MM-DD
   const convertDateToISO = (dateString: string) => {
     if (!dateString || dateString.length !== 10) return '';
     const [day, month, year] = dateString.split('/');
@@ -83,14 +81,7 @@ export default function CadastroProfissional() {
 const validateForm = () => {
     const requiredFields = ['nome', 'dataNascimento', 'cpf', 'genero', 'telefone', 'funcao'];
     
-    //for (let field of requiredFields) {
-    //  if (!formData[any].trim()) {
-      //  Alert.alert('Erro', `O campo ${field} é obrigatório`);
-        //return false;
-      //}
-   // }
-
-    // Validação da data de nascimento
+    
     if (formData.dataNascimento.length !== 10) {
       Alert.alert('Erro', 'Por favor, insira uma data de nascimento válida (DD/MM/AAAA)');
       return false;
@@ -120,7 +111,7 @@ const validateForm = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // Adicione outros headers se necessário (Authorization, etc.)
+          
         },
         body: JSON.stringify(dataToSend),
       });
@@ -134,7 +125,7 @@ const validateForm = () => {
             {
               text: 'OK',
               onPress: () => {
-                // Limpa o formulário após sucesso
+                
                 setFormData({
                   nome: '',
                   dataNascimento: '',

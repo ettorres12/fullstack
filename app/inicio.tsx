@@ -184,7 +184,6 @@ const HomeScreen: React.FC = () => {
   );
 };
 
-// Mantive seus estilos originais
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -19,7 +19,7 @@ export default function CadastroConsulta() {
     cartaoSUSConsulta: '',
     cpfProfissional: '',
     local: '',
-    dataHora: '',  // string formatada
+    dataHora: '', 
     motivoConsulta: '',
     especialidadeConsulta: '',
     observacoes: '',
@@ -39,7 +39,6 @@ export default function CadastroConsulta() {
     }));
   };
 
-  // Função para formatar Date em "DD/MM/YYYY HH:mm"
   const formatDateToDisplay = (date: Date) => {
     const dd = String(date.getDate()).padStart(2, '0');
     const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -49,7 +48,6 @@ export default function CadastroConsulta() {
     return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
-  // Função para formatar Date para ISO no formato usado no input datetime-local (yyyy-MM-ddTHH:mm)
   const formatDateToInputValue = (date: Date) => {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -59,9 +57,7 @@ export default function CadastroConsulta() {
     return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
   };
 
-  // Função para converter valor do input datetime-local para "DD/MM/YYYY HH:mm"
   const formatInputValueToDisplay = (value: string) => {
-    // valor no formato "YYYY-MM-DDTHH:mm"
     if (!value) return '';
     const [datePart, timePart] = value.split('T');
     if (!datePart || !timePart) return '';
@@ -69,7 +65,6 @@ export default function CadastroConsulta() {
     return `${dd}/${mm}/${yyyy} ${timePart}`;
   };
 
-  // Quando usuário muda data no picker React Native
   const handleDateChangeMobile = (_event: any, date?: Date) => {
     setShowPicker(false);
     if (date) {
@@ -79,7 +74,6 @@ export default function CadastroConsulta() {
     }
   };
 
-  // Quando usuário muda data no input web
   const handleDateChangeWeb = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setSelectedDate(val ? new Date(val) : null);
@@ -88,11 +82,10 @@ export default function CadastroConsulta() {
   };
 
   const showDatePicker = () => {
-    if (Platform.OS === 'web') return; // no web não precisa mostrar picker do RN
+    if (Platform.OS === 'web') return; 
     setShowPicker(true);
   };
 
-  // Função para validar formulário (simplificada)
   const validateForm = () => {
     const required = [
       'cartaoSUSConsulta',
@@ -115,7 +108,6 @@ export default function CadastroConsulta() {
     return true;
   };
 
-  // Função para converter DD/MM/YYYY HH:mm para ISO padrão
   const convertDateTimeToISO = (dt: string) => {
     if (!dt) return '';
     const [date, time] = dt.split(' ');
@@ -124,7 +116,6 @@ export default function CadastroConsulta() {
     return `${year}-${month}-${day}T${time}:00`;
   };
 
-  // Envio do formulário
   const cadastrarConsulta = async () => {
     if (!validateForm()) return;
     setLoading(true);

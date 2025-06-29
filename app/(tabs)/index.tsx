@@ -19,13 +19,11 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 const { width, height } = Dimensions.get('window');
 
-// Credenciais padrão do sistema interno
 const DEFAULT_CREDENTIALS = {
   email: 'admin@admin.com',
   password: 'admin123'
 };
 
-// Tipos para navegação
 type RootStackParamList = {
   Login: undefined;
   inicio: undefined;
@@ -80,7 +78,7 @@ const LoginScreen: React.FC = () => {
 
   const handleInputChange = (field: keyof LoginFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Limpa o erro do campo quando o usuário começar a digitar
+  
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
@@ -92,16 +90,14 @@ const LoginScreen: React.FC = () => {
     setIsLoading(true);
 
     try {
-      // Simula chamada de API
+      
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Verifica se as credenciais estão corretas
       if (formData.email !== DEFAULT_CREDENTIALS.email || 
           formData.password !== DEFAULT_CREDENTIALS.password) {
         throw new Error('Credenciais inválidas');
       }
       
-      // Navega para a tela principal após login bem-sucedido
       navigation.replace('inicio');
       
     } catch (error) {
